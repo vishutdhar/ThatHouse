@@ -1,12 +1,13 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { Property, PropertiesState, PropertyFilters } from '../../types';
-import { propertyApi } from '../../services/api';
+import * as supabaseApi from '../../services/supabaseApi';
 
 // Async thunks for API calls
 export const fetchProperties = createAsyncThunk(
   'properties/fetchProperties',
   async (params?: { limit?: number; offset?: number; excludeViewed?: boolean }) => {
-    const response = await propertyApi.getProperties(params);
+    const page = params?.offset ? Math.floor(params.offset / (params?.limit || 20)) + 1 : 1;
+    const response = await supabaseApi.fetchProperties(page, params?.limit || 20);
     return response;
   }
 );
@@ -21,7 +22,8 @@ export const searchProperties = createAsyncThunk(
     baths?: number;
     propertyType?: string;
   }) => {
-    const response = await propertyApi.searchProperties(params);
+    // For now, we'll use location as search query
+    const response = await supabaseApi.searchProperties(params.location || '');
     return response;
   }
 );
@@ -29,7 +31,8 @@ export const searchProperties = createAsyncThunk(
 export const getMapProperties = createAsyncThunk(
   'properties/getMapProperties',
   async (bounds: { north: number; south: number; east: number; west: number }) => {
-    const response = await propertyApi.getMapProperties(bounds);
+    // For now, fetch all properties - in production you'd filter by bounds
+    const response = await supabaseApi.fetchProperties(1, 100);
     return response;
   }
 );

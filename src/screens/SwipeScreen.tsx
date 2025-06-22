@@ -283,8 +283,7 @@ const SwipeScreen = () => {
       const property = properties[currentIndex];
       if (property) {
         dispatch(addSavedProperty(property.id));
-        // Temporarily disable API call until server is properly configured
-        // dispatch(savePropertyAsync(property.id));
+        dispatch(savePropertyAsync(property.id));
         dispatch(incrementIndex());
         showFeedback('like');
       }
@@ -297,8 +296,7 @@ const SwipeScreen = () => {
       const property = properties[currentIndex];
       if (property) {
         dispatch(addRejectedProperty(property.id));
-        // Temporarily disable API call until server is properly configured
-        // dispatch(rejectPropertyAsync(property.id));
+        dispatch(rejectPropertyAsync(property.id));
         dispatch(incrementIndex());
         showFeedback('dislike');
       }

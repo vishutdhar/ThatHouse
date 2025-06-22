@@ -1,28 +1,64 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { User, UserState, UserType } from '../../types';
-import { authApi, propertyApi, userApi } from '../../services/api';
+import * as supabaseApi from '../../services/supabaseApi';
 
 // Async thunks
 export const login = createAsyncThunk(
   'user/login',
   async ({ email, password }: { email: string; password: string }) => {
-    const response = await authApi.login(email, password);
-    return response;
+    const response = await supabaseApi.login(email, password);
+    // Transform to match existing structure
+    return {
+      user: {
+        ...response.user,
+        savedProperties: [],
+        rejectedProperties: [],
+        priorityProperties: [],
+        userType: 'BUYER' as UserType,
+        preferences: {
+          priceRange: { min: 0, max: 1000000 },
+          bedrooms: { min: 1, max: 5 },
+          bathrooms: { min: 1, max: 4 },
+          propertyTypes: ['SINGLE_FAMILY', 'CONDO', 'TOWNHOUSE'],
+          amenities: [],
+          searchRadius: 10,
+        },
+      },
+      token: response.token,
+    };
   }
 );
 
 export const register = createAsyncThunk(
   'user/register',
   async (data: { email: string; password: string; firstName: string; lastName: string }) => {
-    const response = await authApi.register(data);
-    return response;
+    const response = await supabaseApi.register(data);
+    // Transform to match existing structure
+    return {
+      user: {
+        ...response.user,
+        savedProperties: [],
+        rejectedProperties: [],
+        priorityProperties: [],
+        userType: 'BUYER' as UserType,
+        preferences: {
+          priceRange: { min: 0, max: 1000000 },
+          bedrooms: { min: 1, max: 5 },
+          bathrooms: { min: 1, max: 4 },
+          propertyTypes: ['SINGLE_FAMILY', 'CONDO', 'TOWNHOUSE'],
+          amenities: [],
+          searchRadius: 10,
+        },
+      },
+      token: response.token,
+    };
   }
 );
 
 export const savePropertyAsync = createAsyncThunk(
   'user/saveProperty',
   async (propertyId: string) => {
-    await propertyApi.saveProperty(propertyId);
+    await supabaseApi.saveProperty(propertyId);
     return propertyId;
   }
 );
@@ -30,7 +66,7 @@ export const savePropertyAsync = createAsyncThunk(
 export const unsavePropertyAsync = createAsyncThunk(
   'user/unsaveProperty',
   async (propertyId: string) => {
-    await propertyApi.unsaveProperty(propertyId);
+    await supabaseApi.removeSavedProperty(propertyId);
     return propertyId;
   }
 );
@@ -38,7 +74,7 @@ export const unsavePropertyAsync = createAsyncThunk(
 export const rejectPropertyAsync = createAsyncThunk(
   'user/rejectProperty',
   async (propertyId: string) => {
-    await propertyApi.rejectProperty(propertyId);
+    await supabaseApi.rejectProperty(propertyId);
     return propertyId;
   }
 );
@@ -46,7 +82,7 @@ export const rejectPropertyAsync = createAsyncThunk(
 export const unrejectPropertyAsync = createAsyncThunk(
   'user/unrejectProperty',
   async (propertyId: string) => {
-    await propertyApi.unrejectProperty(propertyId);
+    await supabaseApi.unrejectProperty(propertyId);
     return propertyId;
   }
 );
@@ -54,7 +90,7 @@ export const unrejectPropertyAsync = createAsyncThunk(
 export const fetchSavedProperties = createAsyncThunk(
   'user/fetchSavedProperties',
   async () => {
-    const response = await userApi.getSavedProperties();
+    const response = await supabaseApi.getSavedProperties();
     return response.properties;
   }
 );
@@ -62,7 +98,7 @@ export const fetchSavedProperties = createAsyncThunk(
 export const fetchRejectedProperties = createAsyncThunk(
   'user/fetchRejectedProperties',
   async () => {
-    const response = await userApi.getRejectedProperties();
+    const response = await supabaseApi.getRejectedProperties();
     return response.properties;
   }
 );
@@ -88,7 +124,7 @@ const userSlice = createSlice({
       state.savedProperties = [];
       state.rejectedProperties = [];
       state.priorityProperties = [];
-      authApi.logout();
+      supabaseApi.logout();
     },
     updateUserPreferences: (state, action: PayloadAction<Partial<User>>) => {
       if (state.currentUser) {

@@ -15,8 +15,16 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { RootState } from '../store';
 import { Property } from '../types';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import { addSavedProperty, removeRejectedProperty } from '../store/slices/userSlice';
+import { 
+  addSavedProperty, 
+  removeRejectedProperty,
+  addRejectedProperty,
+  removeSavedProperty,
+  savePropertyAsync,
+  unrejectPropertyAsync 
+} from '../store/slices/userSlice';
 import { useTheme } from '../theme/ThemeContext';
+import { Alert } from 'react-native';
 
 type NavigationProp = StackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -63,9 +71,21 @@ const RejectedPropertiesScreen = () => {
       </View>
       <TouchableOpacity 
         style={styles.saveButton}
-        onPress={() => {
-          dispatch(removeRejectedProperty(item.id));
-          dispatch(addSavedProperty(item.id));
+        onPress={async () => {
+          try {
+            // Update UI immediately for better UX
+            dispatch(removeRejectedProperty(item.id));
+            dispatch(addSavedProperty(item.id));
+            
+            // Then persist to database
+            await dispatch(unrejectPropertyAsync(item.id) as any).unwrap();
+            await dispatch(savePropertyAsync(item.id) as any).unwrap();
+          } catch (error: any) {
+            // Revert UI changes on error
+            dispatch(addRejectedProperty(item.id));
+            dispatch(removeSavedProperty(item.id));
+            Alert.alert('Error', 'Failed to save property. Please try again.');
+          }
         }}
       >
         <Icon name="heart-outline" size={24} color="#FF6B6B" />
