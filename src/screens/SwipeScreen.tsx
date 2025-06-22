@@ -543,6 +543,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
   },
+  safeArea: {
+    flex: 1,
+  },
 });
 
 export default SwipeScreen;

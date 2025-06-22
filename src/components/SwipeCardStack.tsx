@@ -1,35 +1,38 @@
-import React, { useCallback, useImperativeHandle, forwardRef } from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import React, { forwardRef, useCallback, useImperativeHandle, useState } from 'react';
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+} from 'react-native';
 import {
   Gesture,
   GestureDetector,
 } from 'react-native-gesture-handler';
 import Animated, {
-  useAnimatedStyle,
   useSharedValue,
+  useAnimatedStyle,
   withSpring,
+  withTiming,
   runOnJS,
   interpolate,
   Extrapolate,
-  withTiming,
   Easing,
 } from 'react-native-reanimated';
-import { Property } from '../types';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
-const SWIPE_THRESHOLD = screenWidth * 0.3;
+const SWIPE_THRESHOLD = screenWidth * 0.25;
 const SWIPE_VELOCITY_THRESHOLD = 500;
 const ROTATION_ANGLE = 15;
-const SCALE_FACTOR = 0.95;
 const STACK_SIZE = 3;
+const SCALE_FACTOR = 0.9;
 
 interface SwipeCardStackProps {
-  cards: Property[];
-  renderCard: (card: Property, index: number) => React.ReactNode;
-  onSwipedLeft?: (cardIndex: number) => void;
-  onSwipedRight?: (cardIndex: number) => void;
-  onSwipedTop?: (cardIndex: number) => void;
+  cards: any[];
+  renderCard: (card: any, index: number) => React.ReactNode;
+  onSwipedLeft?: (index: number) => void;
+  onSwipedRight?: (index: number) => void;
+  onSwipedTop?: (index: number) => void;
   stackSize?: number;
   stackScale?: number;
   stackSeparation?: number;
@@ -40,6 +43,98 @@ export interface SwipeCardStackRef {
   swipeRight: () => void;
   swipeTop: () => void;
 }
+
+// Separate component for individual cards to avoid hooks rules violation
+const SwipeCard = ({
+  card,
+  index,
+  isFirst,
+  renderCard,
+  translateX,
+  translateY,
+  panGesture,
+  cardsLength,
+  stackScale,
+  stackSeparation,
+}: {
+  card: any;
+  index: number;
+  isFirst: boolean;
+  renderCard: (card: any, index: number) => React.ReactNode;
+  translateX: any;
+  translateY: any;
+  panGesture: any;
+  cardsLength: number;
+  stackScale: number;
+  stackSeparation: number;
+}) => {
+  const cardAnimatedStyle = useAnimatedStyle(() => {
+    if (!isFirst) {
+      const scale = interpolate(
+        Math.abs(translateX.value),
+        [0, screenWidth],
+        [SCALE_FACTOR - (index * stackScale) / 100, 1],
+        Extrapolate.CLAMP
+      );
+
+      const translateYOffset = interpolate(
+        Math.abs(translateX.value),
+        [0, screenWidth],
+        [index * stackSeparation, 0],
+        Extrapolate.CLAMP
+      );
+
+      return {
+        transform: [
+          { scale },
+          { translateY: translateYOffset },
+        ],
+        zIndex: cardsLength - index,
+      };
+    }
+
+    const rotate = interpolate(
+      translateX.value,
+      [-screenWidth / 2, 0, screenWidth / 2],
+      [-ROTATION_ANGLE, 0, ROTATION_ANGLE],
+      Extrapolate.CLAMP
+    );
+
+    const opacity = interpolate(
+      Math.abs(translateX.value),
+      [0, screenWidth * 0.8],
+      [1, 0.3],
+      Extrapolate.CLAMP
+    );
+
+    return {
+      transform: [
+        { translateX: translateX.value },
+        { translateY: translateY.value },
+        { rotate: `${rotate}deg` },
+      ],
+      opacity,
+      zIndex: cardsLength - index,
+    };
+  });
+
+  return (
+    <Animated.View
+      key={card.id}
+      style={[styles.card, cardAnimatedStyle]}
+    >
+      {isFirst ? (
+        <GestureDetector gesture={panGesture}>
+          <Animated.View style={StyleSheet.absoluteFillObject}>
+            {renderCard(card, index)}
+          </Animated.View>
+        </GestureDetector>
+      ) : (
+        renderCard(card, index)
+      )}
+    </Animated.View>
+  );
+};
 
 const SwipeCardStack = forwardRef<SwipeCardStackRef, SwipeCardStackProps>(
   (
@@ -100,40 +195,16 @@ const SwipeCardStack = forwardRef<SwipeCardStackRef, SwipeCardStackProps>(
       })
       .onEnd((event) => {
         'worklet';
-        const shouldSwipeRight =
-          translateX.value > SWIPE_THRESHOLD ||
-          event.velocityX > SWIPE_VELOCITY_THRESHOLD;
-        const shouldSwipeLeft =
-          translateX.value < -SWIPE_THRESHOLD ||
-          event.velocityX < -SWIPE_VELOCITY_THRESHOLD;
-        const shouldSwipeTop =
-          translateY.value < -SWIPE_THRESHOLD &&
-          Math.abs(translateX.value) < SWIPE_THRESHOLD &&
-          event.velocityY < -SWIPE_VELOCITY_THRESHOLD;
+        const shouldSwipeLeft = translateX.value < -SWIPE_THRESHOLD || event.velocityX < -SWIPE_VELOCITY_THRESHOLD;
+        const shouldSwipeRight = translateX.value > SWIPE_THRESHOLD || event.velocityX > SWIPE_VELOCITY_THRESHOLD;
+        const shouldSwipeTop = translateY.value < -SWIPE_THRESHOLD && Math.abs(translateX.value) < SWIPE_THRESHOLD;
 
-        if (shouldSwipeRight) {
-          translateX.value = withTiming(
-            screenWidth * 1.5,
-            {
-              duration: 250,
-              easing: Easing.out(Easing.cubic),
-            },
-            () => {
-              'worklet';
-              runOnJS(handleSwipe)('right');
-              translateX.value = 0;
-              translateY.value = 0;
-            }
-          );
-          translateY.value = withTiming(translateY.value * 0.5, {
-            duration: 300,
-          });
-        } else if (shouldSwipeLeft) {
+        if (shouldSwipeLeft) {
           translateX.value = withTiming(
             -screenWidth * 1.5,
             {
-              duration: 250,
-              easing: Easing.out(Easing.cubic),
+              duration: 300,
+              easing: Easing.out(Easing.ease),
             },
             () => {
               'worklet';
@@ -142,15 +213,26 @@ const SwipeCardStack = forwardRef<SwipeCardStackRef, SwipeCardStackProps>(
               translateY.value = 0;
             }
           );
-          translateY.value = withTiming(translateY.value * 0.5, {
-            duration: 300,
-          });
+        } else if (shouldSwipeRight) {
+          translateX.value = withTiming(
+            screenWidth * 1.5,
+            {
+              duration: 300,
+              easing: Easing.out(Easing.ease),
+            },
+            () => {
+              'worklet';
+              runOnJS(handleSwipe)('right');
+              translateX.value = 0;
+              translateY.value = 0;
+            }
+          );
         } else if (shouldSwipeTop) {
           translateY.value = withTiming(
             -screenHeight,
             {
-              duration: 250,
-              easing: Easing.out(Easing.cubic),
+              duration: 300,
+              easing: Easing.out(Easing.ease),
             },
             () => {
               'worklet';
@@ -159,9 +241,8 @@ const SwipeCardStack = forwardRef<SwipeCardStackRef, SwipeCardStackProps>(
               translateY.value = 0;
             }
           );
-          translateX.value = withTiming(0, { duration: 300 });
         } else {
-          resetPosition();
+          runOnJS(resetPosition)();
         }
       });
 
@@ -223,82 +304,25 @@ const SwipeCardStack = forwardRef<SwipeCardStackRef, SwipeCardStackProps>(
       [swipeLeft, swipeRight, swipeTop]
     );
 
-    const renderCards = () => {
-      return cards.slice(0, stackSize).map((card, index) => {
-        const isFirst = index === 0;
-
-        const cardAnimatedStyle = useAnimatedStyle(() => {
-          if (!isFirst) {
-            const scale = interpolate(
-              Math.abs(translateX.value),
-              [0, screenWidth],
-              [SCALE_FACTOR - (index * stackScale) / 100, 1],
-              Extrapolate.CLAMP
-            );
-
-            const translateYOffset = interpolate(
-              Math.abs(translateX.value),
-              [0, screenWidth],
-              [index * stackSeparation, 0],
-              Extrapolate.CLAMP
-            );
-
-            return {
-              transform: [
-                { scale },
-                { translateY: translateYOffset },
-              ],
-              zIndex: cards.length - index,
-            };
-          }
-
-          const rotate = interpolate(
-            translateX.value,
-            [-screenWidth / 2, 0, screenWidth / 2],
-            [-ROTATION_ANGLE, 0, ROTATION_ANGLE],
-            Extrapolate.CLAMP
-          );
-
-          const opacity = interpolate(
-            Math.abs(translateX.value),
-            [0, screenWidth * 0.8],
-            [1, 0.3],
-            Extrapolate.CLAMP
-          );
-
-          return {
-            transform: [
-              { translateX: translateX.value },
-              { translateY: translateY.value },
-              { rotate: `${rotate}deg` },
-            ],
-            opacity,
-            zIndex: cards.length - index,
-          };
-        });
-
-        return (
-          <Animated.View
-            key={card.id}
-            style={[styles.card, cardAnimatedStyle]}
-          >
-            {isFirst ? (
-              <GestureDetector gesture={panGesture}>
-                <Animated.View style={StyleSheet.absoluteFillObject}>
-                  {renderCard(card, index)}
-                </Animated.View>
-              </GestureDetector>
-            ) : (
-              renderCard(card, index)
-            )}
-          </Animated.View>
-        );
-      });
-    };
-
     return (
       <View style={styles.container}>
-        <View style={styles.cardContainer}>{renderCards()}</View>
+        <View style={styles.cardContainer}>
+          {cards.slice(0, stackSize).map((card, index) => (
+            <SwipeCard
+              key={card.id}
+              card={card}
+              index={index}
+              isFirst={index === 0}
+              renderCard={renderCard}
+              translateX={translateX}
+              translateY={translateY}
+              panGesture={panGesture}
+              cardsLength={cards.length}
+              stackScale={stackScale}
+              stackSeparation={stackSeparation}
+            />
+          ))}
+        </View>
       </View>
     );
   }
