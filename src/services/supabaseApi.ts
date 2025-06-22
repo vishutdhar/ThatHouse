@@ -147,6 +147,12 @@ export const fetchProperties = async (page: number = 1, limit: number = 20) => {
   const from = (page - 1) * limit;
   const to = from + limit - 1;
 
+  // First get total count for pagination
+  const { count } = await supabase
+    .from('properties')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'ACTIVE');
+
   // Fetch properties with their images
   const { data: properties, error } = await supabase
     .from('properties')
@@ -170,9 +176,9 @@ export const fetchProperties = async (page: number = 1, limit: number = 20) => {
 
   return {
     properties: transformedProperties,
-    totalCount: transformedProperties.length,
+    totalCount: count || 0,
     page,
-    totalPages: Math.ceil(transformedProperties.length / limit),
+    totalPages: Math.ceil((count || 0) / limit),
   };
 };
 
