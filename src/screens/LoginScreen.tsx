@@ -10,30 +10,20 @@ import {
   Platform,
 } from 'react-native';
 import { useDispatch } from 'react-redux';
-import { loginSuccess } from '../store/slices/userSlice';
+import { login } from '../store/slices/userSlice';
 import { UserType } from '../types';
 import { useTheme } from '../theme/ThemeContext';
 import { Theme } from '../theme/colors';
 
 const LoginScreen = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('test@example.com');
+  const [password, setPassword] = useState('password123');
   const dispatch = useDispatch();
   const { colors } = useTheme();
 
   const handleLogin = () => {
-    // Mock login for MVP
-    dispatch(loginSuccess({
-      id: '1',
-      email: email,
-      firstName: 'John',
-      lastName: 'Doe',
-      userType: UserType.BUYER,
-      savedProperties: [],
-      rejectedProperties: [],
-      createdAt: new Date().toISOString(),
-      lastActive: new Date().toISOString(),
-    }));
+    // Use the async login action
+    dispatch(login({ email, password }) as any);
   };
 
   const styles = getStyles(colors);
@@ -74,6 +64,12 @@ const LoginScreen = () => {
             <TouchableOpacity style={styles.signupButton}>
               <Text style={styles.signupButtonText}>Don't have an account? Sign up</Text>
             </TouchableOpacity>
+            
+            <View style={styles.testCredentialsContainer}>
+              <Text style={styles.testCredentialsText}>Test Credentials:</Text>
+              <Text style={styles.testCredentialsDetail}>Email: test@example.com</Text>
+              <Text style={styles.testCredentialsDetail}>Password: password123</Text>
+            </View>
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -140,6 +136,21 @@ const getStyles = (colors: Theme) => StyleSheet.create({
   signupButtonText: {
     color: '#FF6B6B', // Keep brand color as requested
     fontSize: 14,
+  },
+  testCredentialsContainer: {
+    marginTop: 30,
+    alignItems: 'center',
+  },
+  testCredentialsText: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 5,
+  },
+  testCredentialsDetail: {
+    color: colors.textTertiary,
+    fontSize: 13,
+    marginBottom: 2,
   },
 });
 

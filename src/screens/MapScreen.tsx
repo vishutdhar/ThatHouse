@@ -135,7 +135,15 @@ const MapScreen = () => {
 
   // Filter properties based on current filters
   const filteredProperties = useMemo(() => {
-    return properties.filter(property => {
+    // First, ensure unique properties by ID
+    const uniqueProperties = properties.reduce((acc, property) => {
+      if (!acc.find(p => p.id === property.id)) {
+        acc.push(property);
+      }
+      return acc;
+    }, [] as Property[]);
+    
+    return uniqueProperties.filter(property => {
       if (property.price < filters.priceRange.min || property.price > filters.priceRange.max) {
         return false;
       }
@@ -225,9 +233,9 @@ const MapScreen = () => {
           showsCompass={false}
           onPress={handleMapPress}
         >
-          {filteredProperties.map((property) => (
+          {filteredProperties.map((property, index) => (
             <Marker
-              key={property.id}
+              key={property.id || `property-${index}`}
               coordinate={{
                 latitude: property.latitude,
                 longitude: property.longitude,

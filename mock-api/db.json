@@ -1,0 +1,302 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "email": "test@example.com",
+      "password": "password123",
+      "firstName": "Test",
+      "lastName": "User",
+      "userType": "BUYER",
+      "savedProperties": [
+        "1",
+        "3"
+      ],
+      "rejectedProperties": [
+        "2"
+      ],
+      "priorityProperties": [],
+      "token": "mock-jwt-token-123"
+    },
+    {
+      "id": "9a55",
+      "test": "connection"
+    }
+  ],
+  "properties": [
+    {
+      "id": "1",
+      "address": "123 Broadway",
+      "city": "Nashville",
+      "state": "TN",
+      "zipCode": "37203",
+      "price": 440605,
+      "bedrooms": 2,
+      "bathrooms": 3,
+      "squareFeet": 3453,
+      "yearBuilt": 2018,
+      "propertyType": "SINGLE_FAMILY",
+      "description": "Beautiful modern home with open floor plan and high-end finishes throughout. Chef's kitchen with granite countertops.",
+      "images": [
+        "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800",
+        "https://images.unsplash.com/photo-1567496898669-ee935f5f647a?w=800",
+        "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800"
+      ],
+      "features": [
+        "Granite Counters",
+        "Hardwood Floors",
+        "Pool",
+        "2 Car Garage"
+      ],
+      "latitude": 36.1627,
+      "longitude": -86.7816,
+      "daysOnMarket": 5,
+      "virtualTourUrl": "",
+      "agent": {
+        "name": "Sarah Johnson",
+        "phone": "(615) 555-0123",
+        "email": "sarah@realty.com"
+      }
+    },
+    {
+      "id": "2",
+      "address": "789 Gulch Ave",
+      "city": "Nashville",
+      "state": "TN",
+      "zipCode": "37206",
+      "price": 579938,
+      "bedrooms": 1,
+      "bathrooms": 1,
+      "squareFeet": 1862,
+      "yearBuilt": 2020,
+      "propertyType": "CONDO",
+      "description": "Luxury condo in the heart of the Gulch. Walking distance to restaurants and nightlife. Rooftop pool access.",
+      "images": [
+        "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800",
+        "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800",
+        "https://images.unsplash.com/photo-1494526585095-c41746248156?w=800"
+      ],
+      "features": [
+        "Rooftop Pool",
+        "Gym",
+        "Concierge",
+        "City Views"
+      ],
+      "latitude": 36.1525,
+      "longitude": -86.7898,
+      "daysOnMarket": 12,
+      "virtualTourUrl": "",
+      "agent": {
+        "name": "Mike Chen",
+        "phone": "(615) 555-0456",
+        "email": "mike@urbanliving.com"
+      }
+    },
+    {
+      "id": "3",
+      "address": "321 East Nashville St",
+      "city": "Nashville",
+      "state": "TN",
+      "zipCode": "37216",
+      "price": 593150,
+      "bedrooms": 4,
+      "bathrooms": 2,
+      "squareFeet": 2251,
+      "yearBuilt": 1925,
+      "propertyType": "SINGLE_FAMILY",
+      "description": "Charming restored craftsman with original hardwood floors. Large backyard perfect for entertaining.",
+      "images": [
+        "https://images.unsplash.com/photo-1598228723793-52759bba239c?w=800",
+        "https://images.unsplash.com/photo-1565182999561-18d7dc61c393?w=800",
+        "https://images.unsplash.com/photo-1567684014761-b65e2e59b9eb?w=800"
+      ],
+      "features": [
+        "Original Hardwood",
+        "Updated Kitchen",
+        "Large Yard",
+        "Vintage Charm"
+      ],
+      "latitude": 36.1956,
+      "longitude": -86.7467,
+      "daysOnMarket": 3,
+      "virtualTourUrl": "",
+      "agent": {
+        "name": "Lisa Martinez",
+        "phone": "(615) 555-0789",
+        "email": "lisa@historichomes.com"
+      }
+    },
+    {
+      "id": "4",
+      "address": "456 Green Hills Blvd",
+      "city": "Nashville",
+      "state": "TN",
+      "zipCode": "37215",
+      "price": 850000,
+      "bedrooms": 5,
+      "bathrooms": 4,
+      "squareFeet": 4200,
+      "yearBuilt": 2015,
+      "propertyType": "SINGLE_FAMILY",
+      "description": "Stunning executive home in Green Hills. Gourmet kitchen, home theater, and three-car garage.",
+      "images": [
+        "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800",
+        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800",
+        "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800"
+      ],
+      "features": [
+        "Home Theater",
+        "Wine Cellar",
+        "Smart Home",
+        "Pool"
+      ],
+      "latitude": 36.1068,
+      "longitude": -86.8098,
+      "daysOnMarket": 21,
+      "virtualTourUrl": "",
+      "agent": {
+        "name": "Robert Taylor",
+        "phone": "(615) 555-0234",
+        "email": "robert@luxuryrealty.com"
+      }
+    },
+    {
+      "id": "5",
+      "address": "789 12 South Ave",
+      "city": "Nashville",
+      "state": "TN",
+      "zipCode": "37204",
+      "price": 675000,
+      "bedrooms": 3,
+      "bathrooms": 2,
+      "squareFeet": 2800,
+      "yearBuilt": 1940,
+      "propertyType": "SINGLE_FAMILY",
+      "description": "Renovated bungalow in trendy 12 South. Walk to shops and restaurants. Designer finishes throughout.",
+      "images": [
+        "https://images.unsplash.com/photo-1588880331179-bc9b93a8cb5e?w=800",
+        "https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=800",
+        "https://images.unsplash.com/photo-1560185127-6a86e55cbedf?w=800"
+      ],
+      "features": [
+        "Designer Kitchen",
+        "Walk to Shops",
+        "Fenced Yard",
+        "Guest Suite"
+      ],
+      "latitude": 36.1176,
+      "longitude": -86.7897,
+      "daysOnMarket": 7,
+      "virtualTourUrl": "",
+      "agent": {
+        "name": "Jennifer Adams",
+        "phone": "(615) 555-0567",
+        "email": "jennifer@12southrealty.com"
+      }
+    },
+    {
+      "id": "6",
+      "address": "246 Germantown Ave",
+      "city": "Nashville",
+      "state": "TN",
+      "zipCode": "37207",
+      "price": 425000,
+      "bedrooms": 2,
+      "bathrooms": 2,
+      "squareFeet": 1650,
+      "yearBuilt": 2019,
+      "propertyType": "TOWNHOUSE",
+      "description": "Modern townhouse with rooftop deck and skyline views. Low maintenance living in hip neighborhood.",
+      "images": [
+        "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800",
+        "https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=800",
+        "https://images.unsplash.com/photo-1582063289852-62e3ba2747f8?w=800"
+      ],
+      "features": [
+        "Rooftop Deck",
+        "City Views",
+        "Modern Design",
+        "Low HOA"
+      ],
+      "latitude": 36.1867,
+      "longitude": -86.7758,
+      "daysOnMarket": 14,
+      "virtualTourUrl": "",
+      "agent": {
+        "name": "David Wilson",
+        "phone": "(615) 555-0890",
+        "email": "david@urbanliving.com"
+      }
+    },
+    {
+      "id": "7",
+      "address": "567 Belle Meade Blvd",
+      "city": "Nashville",
+      "state": "TN",
+      "zipCode": "37205",
+      "price": 1250000,
+      "bedrooms": 6,
+      "bathrooms": 5,
+      "squareFeet": 5500,
+      "yearBuilt": 2008,
+      "propertyType": "SINGLE_FAMILY",
+      "description": "Elegant estate home on large lot. Professional landscaping, pool, and guest house included.",
+      "images": [
+        "https://images.unsplash.com/photo-1613977257363-707ba9348227?w=800",
+        "https://images.unsplash.com/photo-1601760562234-9814eea6663a?w=800",
+        "https://images.unsplash.com/photo-1605276373954-0c4a0dac5b12?w=800"
+      ],
+      "features": [
+        "Guest House",
+        "Pool",
+        "Tennis Court",
+        "Wine Room"
+      ],
+      "latitude": 36.0962,
+      "longitude": -86.8587,
+      "daysOnMarket": 45,
+      "virtualTourUrl": "",
+      "agent": {
+        "name": "Patricia Brown",
+        "phone": "(615) 555-0123",
+        "email": "patricia@bellemeaderealty.com"
+      }
+    },
+    {
+      "id": "8",
+      "address": "890 Sylvan Park Way",
+      "city": "Nashville",
+      "state": "TN",
+      "zipCode": "37209",
+      "price": 525000,
+      "bedrooms": 3,
+      "bathrooms": 2,
+      "squareFeet": 2100,
+      "yearBuilt": 1950,
+      "propertyType": "SINGLE_FAMILY",
+      "description": "Updated mid-century home with modern amenities. Great schools and family-friendly neighborhood.",
+      "images": [
+        "https://images.unsplash.com/photo-1554995207-c18c203602cb?w=800",
+        "https://images.unsplash.com/photo-1560184897-ae75f418493e?w=800",
+        "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800"
+      ],
+      "features": [
+        "Updated Kitchen",
+        "Hardwood Floors",
+        "Covered Porch",
+        "Storage Shed"
+      ],
+      "latitude": 36.1474,
+      "longitude": -86.8452,
+      "daysOnMarket": 9,
+      "virtualTourUrl": "",
+      "agent": {
+        "name": "Mark Thompson",
+        "phone": "(615) 555-0345",
+        "email": "mark@sylvanparkhomes.com"
+      }
+    }
+  ],
+  "savedProperties": [],
+  "rejectedProperties": [],
+  "searchHistory": []
+}

@@ -86,7 +86,15 @@ const SearchScreen = () => {
     
     // Simulate search with filters
     setTimeout(() => {
-      let filtered = properties.filter(property => {
+      // First, ensure unique properties by ID
+      const uniqueProperties = properties.reduce((acc, property) => {
+        if (!acc.find(p => p.id === property.id)) {
+          acc.push(property);
+        }
+        return acc;
+      }, [] as Property[]);
+
+      let filtered = uniqueProperties.filter(property => {
         // Text search
         if (query && !property.address.toLowerCase().includes(query.toLowerCase()) &&
             !property.city.toLowerCase().includes(query.toLowerCase())) {
@@ -393,7 +401,7 @@ const SearchScreen = () => {
       <FlatList
         data={searchResults}
         renderItem={renderPropertyItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => item.id || `property-${index}`}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={

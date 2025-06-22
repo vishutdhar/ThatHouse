@@ -30,6 +30,19 @@
 		<false/>
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>192.168.1.192</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
+			<key>localhost</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
+		</dict>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>That House needs your location to show properties near you</string>

@@ -25,9 +25,8 @@ import { RootState } from '../store';
 import {
   incrementIndex,
   decrementIndex,
-  fetchPropertiesStart,
-  fetchPropertiesSuccess,
   resetProperties,
+  fetchProperties,
 } from '../store/slices/propertiesSlice';
 import {
   addSavedProperty,
@@ -35,6 +34,8 @@ import {
   addRejectedProperty,
   removeRejectedProperty,
   removeSavedProperty,
+  savePropertyAsync,
+  rejectPropertyAsync,
 } from '../store/slices/userSlice';
 import { Property, PropertyType, PropertyStatus, ListingType } from '../types';
 import { RootStackParamList } from '../navigation/AppNavigator';
@@ -248,13 +249,8 @@ const SwipeScreen = () => {
   );
 
   const loadProperties = useCallback(() => {
-    dispatch(fetchPropertiesStart());
-    // Simulate API call with filters
-    setTimeout(() => {
-      const newProperties = generateMockProperties(filters);
-      dispatch(fetchPropertiesSuccess(newProperties));
-    }, 1000);
-  }, [dispatch, filters]);
+    dispatch(fetchProperties({ limit: 10, offset: properties.length }));
+  }, [dispatch, properties.length]);
 
   useEffect(() => {
     if (properties.length === 0) {
@@ -273,11 +269,7 @@ const SwipeScreen = () => {
   useEffect(() => {
     // Clear existing properties and reload with new filters
     dispatch(resetProperties());
-    dispatch(fetchPropertiesStart());
-    setTimeout(() => {
-      const newProperties = generateMockProperties(filters);
-      dispatch(fetchPropertiesSuccess(newProperties));
-    }, 1000);
+    dispatch(fetchProperties({ limit: 10, offset: 0 }));
   }, [filters, dispatch]);
 
 
@@ -291,6 +283,8 @@ const SwipeScreen = () => {
       const property = properties[currentIndex];
       if (property) {
         dispatch(addSavedProperty(property.id));
+        // Temporarily disable API call until server is properly configured
+        // dispatch(savePropertyAsync(property.id));
         dispatch(incrementIndex());
         showFeedback('like');
       }
@@ -303,6 +297,8 @@ const SwipeScreen = () => {
       const property = properties[currentIndex];
       if (property) {
         dispatch(addRejectedProperty(property.id));
+        // Temporarily disable API call until server is properly configured
+        // dispatch(rejectPropertyAsync(property.id));
         dispatch(incrementIndex());
         showFeedback('dislike');
       }

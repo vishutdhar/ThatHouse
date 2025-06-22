@@ -1,5 +1,38 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { Property, PropertiesState, PropertyFilters } from '../../types';
+import { propertyApi } from '../../services/api';
+
+// Async thunks for API calls
+export const fetchProperties = createAsyncThunk(
+  'properties/fetchProperties',
+  async (params?: { limit?: number; offset?: number; excludeViewed?: boolean }) => {
+    const response = await propertyApi.getProperties(params);
+    return response;
+  }
+);
+
+export const searchProperties = createAsyncThunk(
+  'properties/searchProperties',
+  async (params: {
+    location?: string;
+    priceMin?: number;
+    priceMax?: number;
+    beds?: number;
+    baths?: number;
+    propertyType?: string;
+  }) => {
+    const response = await propertyApi.searchProperties(params);
+    return response;
+  }
+);
+
+export const getMapProperties = createAsyncThunk(
+  'properties/getMapProperties',
+  async (bounds: { north: number; south: number; east: number; west: number }) => {
+    const response = await propertyApi.getMapProperties(bounds);
+    return response;
+  }
+);
 
 const initialState: PropertiesState = {
   properties: [],
@@ -25,20 +58,6 @@ const propertiesSlice = createSlice({
   name: 'properties',
   initialState,
   reducers: {
-    fetchPropertiesStart: (state) => {
-      state.isLoading = true;
-      state.error = null;
-    },
-    fetchPropertiesSuccess: (state, action: PayloadAction<Property[]>) => {
-      state.isLoading = false;
-      state.properties = [...state.properties, ...action.payload];
-      state.hasMore = action.payload.length > 0;
-      state.error = null;
-    },
-    fetchPropertiesFailure: (state, action: PayloadAction<string>) => {
-      state.isLoading = false;
-      state.error = action.payload;
-    },
     setCurrentIndex: (state, action: PayloadAction<number>) => {
       state.currentIndex = action.payload;
     },
@@ -95,12 +114,63 @@ const propertiesSlice = createSlice({
       state.propertyCollections = {};
     },
   },
+  extraReducers: (builder) => {
+    // Handle fetchProperties
+    builder
+      .addCase(fetchProperties.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchProperties.fulfilled, (state, action) => {
+        state.isLoading = false;
+        // Merge new properties, avoiding duplicates
+        const existingIds = new Set(state.properties.map(p => p.id));
+        const newProperties = action.payload.properties.filter(p => !existingIds.has(p.id));
+        state.properties = [...state.properties, ...newProperties];
+        state.hasMore = action.payload.hasMore;
+        state.error = null;
+      })
+      .addCase(fetchProperties.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message || 'Failed to fetch properties';
+      });
+
+    // Handle searchProperties
+    builder
+      .addCase(searchProperties.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(searchProperties.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.properties = action.payload.properties;
+        state.currentIndex = 0;
+        state.error = null;
+      })
+      .addCase(searchProperties.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message || 'Failed to search properties';
+      });
+
+    // Handle getMapProperties
+    builder
+      .addCase(getMapProperties.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(getMapProperties.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.properties = action.payload.properties;
+        state.error = null;
+      })
+      .addCase(getMapProperties.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message || 'Failed to fetch map properties';
+      });
+  },
 });
 
 export const {
-  fetchPropertiesStart,
-  fetchPropertiesSuccess,
-  fetchPropertiesFailure,
   setCurrentIndex,
   incrementIndex,
   decrementIndex,

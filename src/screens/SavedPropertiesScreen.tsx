@@ -34,7 +34,7 @@ const SavedPropertiesScreen = () => {
   const { properties } = useSelector((state: RootState) => state.properties);
   const { savedProperties, priorityProperties, rejectedProperties } = useSelector((state: RootState) => state.user);
   
-  const [sortBy, setSortBy] = useState<'recent' | 'price' | 'priority'>('recent');
+  const [sortBy, setSortBy] = useState<'recent' | 'price'>('recent');
   const [showRejected, setShowRejected] = useState((route.params as any)?.showRejected || false);
 
   const savedPropertiesList = useMemo(() => {
@@ -46,15 +46,6 @@ const SavedPropertiesScreen = () => {
     switch (sortBy) {
       case 'price':
         return [...saved].sort((a, b) => b.price - a.price);
-      case 'priority':
-        // Show priority properties first
-        return [...saved].sort((a, b) => {
-          const aIsPriority = priorityProperties.includes(a.id);
-          const bIsPriority = priorityProperties.includes(b.id);
-          if (aIsPriority && !bIsPriority) return -1;
-          if (!aIsPriority && bIsPriority) return 1;
-          return 0;
-        });
       case 'recent':
       default:
         // Most recently saved first (reverse order of savedProperties array)
@@ -192,44 +183,43 @@ const SavedPropertiesScreen = () => {
               {!showRejected && priorityProperties.length > 0 && ` • ${priorityProperties.length} starred`}
             </Text>
             
-            {/* Sort Button */}
-            {savedPropertiesList.length > 0 && !showRejected && (
+            <View style={styles.buttonsContainer}>
+              {/* Rejected Toggle */}
               <TouchableOpacity
-                style={[styles.sortButton, { backgroundColor: colors.chipBackground }]}
-                onPress={() => {
-                  const options = ['recent', 'price', 'priority'];
-                  const currentIndex = options.indexOf(sortBy);
-                  const nextIndex = (currentIndex + 1) % options.length;
-                  setSortBy(options[nextIndex] as any);
-                }}
+                style={[styles.sortButton, { 
+                  backgroundColor: showRejected ? colors.primary : colors.chipBackground 
+                }]}
+                onPress={() => setShowRejected(!showRejected)}
               >
-                <Icon name="swap-vertical" size={16} color={colors.primary} />
-                <Text style={[styles.sortText, { color: colors.primary }]}>
-                  {sortBy === 'recent' && 'Recent'}
-                  {sortBy === 'price' && 'Price'}
-                  {sortBy === 'priority' && 'Starred'}
+                <Icon 
+                  name="close" 
+                  size={16} 
+                  color={showRejected ? '#fff' : colors.primary} 
+                />
+                <Text style={[styles.sortText, { color: showRejected ? '#fff' : colors.primary }]}>
+                  Rejected
                 </Text>
               </TouchableOpacity>
-            )}
-            
-            {/* Rejected Toggle */}
-            <TouchableOpacity
-              style={[styles.rejectedButton, { 
-                backgroundColor: showRejected ? colors.primary : colors.chipBackground 
-              }]}
-              onPress={() => setShowRejected(!showRejected)}
-            >
-              <Icon 
-                name="close" 
-                size={18} 
-                color={showRejected ? '#fff' : colors.textSecondary} 
-              />
-              {showRejected && (
-                <Text style={[styles.rejectedButtonText, { color: '#fff' }]}>
-                  {rejectedProperties.length}
-                </Text>
+              
+              {/* Sort Button */}
+              {savedPropertiesList.length > 0 && !showRejected && (
+                <TouchableOpacity
+                  style={[styles.sortButton, { backgroundColor: colors.chipBackground }]}
+                  onPress={() => {
+                    const options = ['recent', 'price'];
+                    const currentIndex = options.indexOf(sortBy);
+                    const nextIndex = (currentIndex + 1) % options.length;
+                    setSortBy(options[nextIndex] as any);
+                  }}
+                >
+                  <Icon name="swap-vertical" size={16} color={colors.primary} />
+                  <Text style={[styles.sortText, { color: colors.primary }]}>
+                    {sortBy === 'recent' && 'Recent'}
+                    {sortBy === 'price' && 'Price'}
+                  </Text>
+                </TouchableOpacity>
               )}
-            </TouchableOpacity>
+            </View>
           </View>
         </View>
       </View>
@@ -238,7 +228,7 @@ const SavedPropertiesScreen = () => {
       <FlatList
         data={savedPropertiesList}
         renderItem={renderPropertyCard}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => item.id || `property-${index}`}
         numColumns={2}
         columnWrapperStyle={styles.row}
         contentContainerStyle={[
@@ -264,8 +254,8 @@ const styles = StyleSheet.create({
   headerSubtitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginTop: 4,
-    gap: 12,
   },
   headerTitle: {
     fontSize: 28,
@@ -275,6 +265,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 2,
   },
+  buttonsContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
   sortButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -282,7 +276,6 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 16,
     gap: 4,
-    marginLeft: 'auto',
   },
   sortText: {
     fontSize: 13,

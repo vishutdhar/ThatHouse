@@ -1,135 +1,242 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { User, UserState, UserType } from '../../types';
+import { authApi, propertyApi, userApi } from '../../services/api';
+
+// Async thunks
+export const login = createAsyncThunk(
+  'user/login',
+  async ({ email, password }: { email: string; password: string }) => {
+    const response = await authApi.login(email, password);
+    return response;
+  }
+);
+
+export const register = createAsyncThunk(
+  'user/register',
+  async (data: { email: string; password: string; firstName: string; lastName: string }) => {
+    const response = await authApi.register(data);
+    return response;
+  }
+);
+
+export const savePropertyAsync = createAsyncThunk(
+  'user/saveProperty',
+  async (propertyId: string) => {
+    await propertyApi.saveProperty(propertyId);
+    return propertyId;
+  }
+);
+
+export const unsavePropertyAsync = createAsyncThunk(
+  'user/unsaveProperty',
+  async (propertyId: string) => {
+    await propertyApi.unsaveProperty(propertyId);
+    return propertyId;
+  }
+);
+
+export const rejectPropertyAsync = createAsyncThunk(
+  'user/rejectProperty',
+  async (propertyId: string) => {
+    await propertyApi.rejectProperty(propertyId);
+    return propertyId;
+  }
+);
+
+export const unrejectPropertyAsync = createAsyncThunk(
+  'user/unrejectProperty',
+  async (propertyId: string) => {
+    await propertyApi.unrejectProperty(propertyId);
+    return propertyId;
+  }
+);
+
+export const fetchSavedProperties = createAsyncThunk(
+  'user/fetchSavedProperties',
+  async () => {
+    const response = await userApi.getSavedProperties();
+    return response.properties;
+  }
+);
+
+export const fetchRejectedProperties = createAsyncThunk(
+  'user/fetchRejectedProperties',
+  async () => {
+    const response = await userApi.getRejectedProperties();
+    return response.properties;
+  }
+);
 
 const initialState: UserState = {
-  currentUser: {
-    id: 'test-user',
-    email: 'test@example.com',
-    firstName: 'Test',
-    lastName: 'User',
-    userType: UserType.BUYER,
-    savedProperties: [],
-    rejectedProperties: [],
-    priorityProperties: [],
-    createdAt: new Date().toISOString(),
-    lastActive: new Date().toISOString(),
-  },
-  isAuthenticated: true, // Set to true to bypass login
+  currentUser: null,
+  isAuthenticated: false,
   isLoading: false,
   error: null,
   savedProperties: [],
   rejectedProperties: [],
-  priorityProperties: [], // Properties marked with superlike
+  priorityProperties: [],
 };
 
 const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    loginStart: (state) => {
-      state.isLoading = true;
-      state.error = null;
-    },
-    loginSuccess: (state, action: PayloadAction<User>) => {
-      state.isLoading = false;
-      state.isAuthenticated = true;
-      state.currentUser = action.payload;
-      state.error = null;
-    },
-    loginFailure: (state, action: PayloadAction<string>) => {
-      state.isLoading = false;
-      state.isAuthenticated = false;
-      state.currentUser = null;
-      state.error = action.payload;
-    },
     logout: (state) => {
       state.currentUser = null;
       state.isAuthenticated = false;
       state.error = null;
+      state.savedProperties = [];
+      state.rejectedProperties = [];
+      state.priorityProperties = [];
+      authApi.logout();
     },
     updateUserPreferences: (state, action: PayloadAction<Partial<User>>) => {
       if (state.currentUser) {
         state.currentUser = { ...state.currentUser, ...action.payload };
       }
     },
+    // Local actions for immediate UI update
     addSavedProperty: (state, action: PayloadAction<string>) => {
-      if (!state.savedProperties.includes(action.payload)) {
-        state.savedProperties.push(action.payload);
-      }
       if (state.currentUser && !state.currentUser.savedProperties.includes(action.payload)) {
         state.currentUser.savedProperties.push(action.payload);
-      }
-    },
-    addPriorityProperty: (state, action: PayloadAction<string>) => {
-      // Add to both saved and priority lists
-      if (!state.savedProperties.includes(action.payload)) {
         state.savedProperties.push(action.payload);
-      }
-      if (!state.priorityProperties.includes(action.payload)) {
-        state.priorityProperties.push(action.payload);
-      }
-      if (state.currentUser) {
-        if (!state.currentUser.savedProperties.includes(action.payload)) {
-          state.currentUser.savedProperties.push(action.payload);
-        }
-        if (!state.currentUser.priorityProperties?.includes(action.payload)) {
-          if (!state.currentUser.priorityProperties) {
-            state.currentUser.priorityProperties = [];
-          }
-          state.currentUser.priorityProperties.push(action.payload);
-        }
       }
     },
     removeSavedProperty: (state, action: PayloadAction<string>) => {
-      state.savedProperties = state.savedProperties.filter(
-        id => id !== action.payload
-      );
-      state.priorityProperties = state.priorityProperties.filter(
-        id => id !== action.payload
-      );
       if (state.currentUser) {
-        state.currentUser.savedProperties = state.currentUser.savedProperties.filter(
-          id => id !== action.payload
-        );
-        if (state.currentUser.priorityProperties) {
-          state.currentUser.priorityProperties = state.currentUser.priorityProperties.filter(
-            id => id !== action.payload
-          );
-        }
+        state.currentUser.savedProperties = state.currentUser.savedProperties.filter(id => id !== action.payload);
+        state.savedProperties = state.savedProperties.filter(id => id !== action.payload);
       }
     },
     addRejectedProperty: (state, action: PayloadAction<string>) => {
-      if (!state.rejectedProperties.includes(action.payload)) {
-        state.rejectedProperties.push(action.payload);
-      }
       if (state.currentUser && !state.currentUser.rejectedProperties.includes(action.payload)) {
         state.currentUser.rejectedProperties.push(action.payload);
+        state.rejectedProperties.push(action.payload);
       }
     },
     removeRejectedProperty: (state, action: PayloadAction<string>) => {
-      state.rejectedProperties = state.rejectedProperties.filter(
-        id => id !== action.payload
-      );
       if (state.currentUser) {
-        state.currentUser.rejectedProperties = state.currentUser.rejectedProperties.filter(
-          id => id !== action.payload
-        );
+        state.currentUser.rejectedProperties = state.currentUser.rejectedProperties.filter(id => id !== action.payload);
+        state.rejectedProperties = state.rejectedProperties.filter(id => id !== action.payload);
       }
     },
+    addPriorityProperty: (state, action: PayloadAction<string>) => {
+      if (state.currentUser && !state.currentUser.priorityProperties.includes(action.payload)) {
+        state.currentUser.priorityProperties.push(action.payload);
+        state.priorityProperties.push(action.payload);
+      }
+    },
+    removePriorityProperty: (state, action: PayloadAction<string>) => {
+      if (state.currentUser) {
+        state.currentUser.priorityProperties = state.currentUser.priorityProperties.filter(id => id !== action.payload);
+        state.priorityProperties = state.priorityProperties.filter(id => id !== action.payload);
+      }
+    },
+    clearAllSavedProperties: (state) => {
+      if (state.currentUser) {
+        state.currentUser.savedProperties = [];
+        state.savedProperties = [];
+      }
+    },
+    clearAllRejectedProperties: (state) => {
+      if (state.currentUser) {
+        state.currentUser.rejectedProperties = [];
+        state.rejectedProperties = [];
+      }
+    },
+    setCurrentUser: (state, action: PayloadAction<User>) => {
+      state.currentUser = action.payload;
+      state.isAuthenticated = true;
+      state.savedProperties = action.payload.savedProperties;
+      state.rejectedProperties = action.payload.rejectedProperties;
+      state.priorityProperties = action.payload.priorityProperties || [];
+    },
+  },
+  extraReducers: (builder) => {
+    // Login
+    builder
+      .addCase(login.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isAuthenticated = true;
+        state.currentUser = action.payload.user;
+        state.savedProperties = action.payload.user.savedProperties;
+        state.rejectedProperties = action.payload.user.rejectedProperties;
+        state.error = null;
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message || 'Login failed';
+      });
+
+    // Register
+    builder
+      .addCase(register.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(register.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isAuthenticated = true;
+        state.currentUser = action.payload.user;
+        state.savedProperties = action.payload.user.savedProperties;
+        state.rejectedProperties = action.payload.user.rejectedProperties;
+        state.error = null;
+      })
+      .addCase(register.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message || 'Registration failed';
+      });
+
+    // Save property
+    builder.addCase(savePropertyAsync.fulfilled, (state, action) => {
+      if (state.currentUser && !state.currentUser.savedProperties.includes(action.payload)) {
+        state.currentUser.savedProperties.push(action.payload);
+        state.savedProperties.push(action.payload);
+      }
+    });
+
+    // Unsave property
+    builder.addCase(unsavePropertyAsync.fulfilled, (state, action) => {
+      if (state.currentUser) {
+        state.currentUser.savedProperties = state.currentUser.savedProperties.filter(id => id !== action.payload);
+        state.savedProperties = state.savedProperties.filter(id => id !== action.payload);
+      }
+    });
+
+    // Reject property
+    builder.addCase(rejectPropertyAsync.fulfilled, (state, action) => {
+      if (state.currentUser && !state.currentUser.rejectedProperties.includes(action.payload)) {
+        state.currentUser.rejectedProperties.push(action.payload);
+        state.rejectedProperties.push(action.payload);
+      }
+    });
+
+    // Unreject property
+    builder.addCase(unrejectPropertyAsync.fulfilled, (state, action) => {
+      if (state.currentUser) {
+        state.currentUser.rejectedProperties = state.currentUser.rejectedProperties.filter(id => id !== action.payload);
+        state.rejectedProperties = state.rejectedProperties.filter(id => id !== action.payload);
+      }
+    });
   },
 });
 
 export const {
-  loginStart,
-  loginSuccess,
-  loginFailure,
   logout,
   updateUserPreferences,
   addSavedProperty,
-  addPriorityProperty,
   removeSavedProperty,
   addRejectedProperty,
   removeRejectedProperty,
+  addPriorityProperty,
+  removePriorityProperty,
+  clearAllSavedProperties,
+  clearAllRejectedProperties,
+  setCurrentUser,
 } = userSlice.actions;
 
 export default userSlice.reducer;
