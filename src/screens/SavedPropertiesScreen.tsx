@@ -35,7 +35,7 @@ const SavedPropertiesScreen = () => {
   const { savedProperties, priorityProperties, rejectedProperties } = useSelector((state: RootState) => state.user);
   
   const [sortBy, setSortBy] = useState<'recent' | 'price'>('recent');
-  const [showRejected, setShowRejected] = useState((route.params as any)?.showRejected || false);
+  const [showRejected, setShowRejected] = useState(false);
 
   const savedPropertiesList = useMemo(() => {
     const saved = properties.filter(property => 

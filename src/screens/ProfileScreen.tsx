@@ -60,7 +60,7 @@ const ProfileScreen = () => {
       icon: 'close-circle-outline',
       title: 'Rejected homes',
       value: String(rejectedProperties.length),
-      onPress: () => navigation.navigate('Main', { screen: 'Saved', params: { showRejected: true } } as any),
+      onPress: () => navigation.navigate('RejectedProperties' as any),
     },
     {
       section: 'Settings',

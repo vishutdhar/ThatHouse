@@ -191,13 +191,23 @@ const generateMockProperties = (filters?: any): Property[] => {
       ...generalFeatures.sort(() => 0.5 - Math.random()).slice(0, 2),
     ];
 
+    // Add previousPrice for some properties to show price reduction
+    const propertyHash = i + city.length;
+    const isPriceReduced = (propertyHash % 10) > 7; // 30% chance
+    // Ensure previousPrice is always higher than current price when reduced
+    const previousPrice = isPriceReduced ? (price + Math.floor(Math.random() * 50000) + 10000) : undefined;
+    const hasOpenHouse = (propertyHash % 10) > 8; // 20% chance
+
     properties.push({
       id: `prop_${Date.now()}_${i}`,
       address,
       city,
       state,
       zipCode: city === 'Nashville' ? `3720${i}` : `3${Math.floor(Math.random() * 9000) + 1000}`,
-      price: adjustedPrice,
+      price,
+      previousPrice,
+      isPriceReduced,
+      nextOpenHouse: hasOpenHouse ? new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString() : undefined,
       bedrooms,
       bathrooms,
       squareFeet: Math.floor(Math.random() * 2000) + 1500,

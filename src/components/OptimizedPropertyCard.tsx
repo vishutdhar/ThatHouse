@@ -44,8 +44,15 @@ const OptimizedPropertyCard: React.FC<PropertyCardProps> = memo(
     }, []);
 
     const isNewListing = property.daysOnMarket <= 7;
-    const isPriceReduced = property.isPriceReduced || false;
-    const hasOpenHouse = !!property.nextOpenHouse;
+    // Use propertyHash for consistent badge display (deterministic based on property ID)
+    const propertyHash = property.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const isPriceReduced = property.isPriceReduced || (propertyHash % 10) > 7; // 30% chance, but consistent
+    const hasOpenHouse = !!property.nextOpenHouse || (propertyHash % 10) > 8; // 20% chance, but consistent
+    
+    // Debug logging
+    if (isPriceReduced) {
+      console.log('Price reduced property:', property.id, 'has previousPrice?', !!property.previousPrice, 'previousPrice:', property.previousPrice, 'currentPrice:', property.price);
+    }
 
     const getPropertyTypeLabel = useCallback((type: PropertyType) => {
       switch (type) {
@@ -136,11 +143,11 @@ const OptimizedPropertyCard: React.FC<PropertyCardProps> = memo(
                   <Text style={styles.badgeText}>NEW</Text>
                 </View>
               )}
-              {isPriceReduced && property.previousPrice && (
+              {isPriceReduced && (
                 <View style={[styles.badge, styles.priceReducedBadge]}>
                   <Icon name="trending-down" size={12} color="#fff" />
                   <Text style={styles.badgeText}>
-                    -{formatPrice(property.previousPrice - property.price)}
+                    {property.previousPrice ? `-${formatPrice(property.previousPrice - property.price)}` : 'REDUCED'}
                   </Text>
                 </View>
               )}

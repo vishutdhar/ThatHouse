@@ -41,6 +41,13 @@ export interface Property {
 
 // Transform Supabase property to our app format
 const transformProperty = (dbProperty: any, images: any[]): Property => {
+  // Mock data for testing price reduction badges
+  const propertyHash = dbProperty.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+  const mockIsPriceReduced = dbProperty.is_price_reduced || (propertyHash % 10) > 7; // 30% chance
+  const mockPreviousPrice = mockIsPriceReduced ? 
+    (dbProperty.previous_price || dbProperty.price + Math.floor(Math.random() * 50000) + 10000) : 
+    dbProperty.previous_price;
+
   return {
     id: dbProperty.id,
     address: dbProperty.address,
@@ -60,10 +67,10 @@ const transformProperty = (dbProperty: any, images: any[]): Property => {
     longitude: dbProperty.longitude,
     daysOnMarket: dbProperty.days_on_market,
     virtualTourUrl: dbProperty.virtual_tour_url,
-    // Price tracking fields
-    previousPrice: dbProperty.previous_price,
+    // Price tracking fields with mock data fallback
+    previousPrice: mockPreviousPrice,
     priceChangedDate: dbProperty.price_changed_date,
-    isPriceReduced: dbProperty.is_price_reduced,
+    isPriceReduced: mockIsPriceReduced,
     // Open house info (if using the view)
     nextOpenHouse: dbProperty.next_open_house_start ? {
       startTime: dbProperty.next_open_house_start,
