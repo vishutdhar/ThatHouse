@@ -55,7 +55,7 @@ const SavedPropertiesScreen = () => {
           return bIndex - aIndex;
         });
     }
-  }, [properties, savedProperties, priorityProperties, sortBy]);
+  }, [properties, savedProperties, rejectedProperties, priorityProperties, sortBy, showRejected]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {

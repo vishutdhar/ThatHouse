@@ -22,7 +22,7 @@ type NavigationProp = StackNavigationProp<RootStackParamList, 'Main'>;
 const ProfileScreen = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation<NavigationProp>();
-  const { currentUser } = useSelector((state: RootState) => state.user);
+  const { currentUser, savedProperties, rejectedProperties } = useSelector((state: RootState) => state.user);
   const { colors } = useTheme();
 
   const handleLogout = () => {
@@ -53,14 +53,14 @@ const ProfileScreen = () => {
     {
       icon: 'heart-outline',
       title: 'Saved homes',
-      value: String(currentUser?.savedProperties.length || 0),
+      value: String(savedProperties.length),
       onPress: () => navigation.navigate('Main', { screen: 'Saved' } as any),
     },
     {
       icon: 'close-circle-outline',
       title: 'Rejected homes',
-      value: String(currentUser?.rejectedProperties.length || 0),
-      onPress: () => navigation.navigate('Saved', { showRejected: true } as any),
+      value: String(rejectedProperties.length),
+      onPress: () => navigation.navigate('Main', { screen: 'Saved', params: { showRejected: true } } as any),
     },
     {
       section: 'Settings',

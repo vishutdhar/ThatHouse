@@ -19,6 +19,7 @@ interface PropertyCardProps {
   property: Property;
   onPress?: () => void;
   style?: any;
+  isSwipeActive?: boolean;
 }
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -28,7 +29,7 @@ const FastImage = null; // Will be available when react-native-fast-image suppor
 const ImageComponent = FastImage || Image;
 
 const OptimizedPropertyCard: React.FC<PropertyCardProps> = memo(
-  ({ property, onPress, style }) => {
+  ({ property, onPress, style, isSwipeActive = false }) => {
     const { colors } = useTheme();
     const [imageLoading, setImageLoading] = useState(true);
     const [imageError, setImageError] = useState(false);
@@ -43,8 +44,8 @@ const OptimizedPropertyCard: React.FC<PropertyCardProps> = memo(
     }, []);
 
     const isNewListing = property.daysOnMarket <= 7;
-    const isPriceReduced = Math.random() > 0.7; // Mock price reduction status
-    const hasOpenHouse = Math.random() > 0.8; // Mock open house status
+    const isPriceReduced = property.isPriceReduced || false;
+    const hasOpenHouse = !!property.nextOpenHouse;
 
     const getPropertyTypeLabel = useCallback((type: PropertyType) => {
       switch (type) {
@@ -83,7 +84,11 @@ const OptimizedPropertyCard: React.FC<PropertyCardProps> = memo(
 
     return (
       <TouchableOpacity
-        style={[styles.card, { backgroundColor: colors.cardBackground }, style]}
+        style={[
+          styles.card, 
+          { backgroundColor: colors.cardBackground },
+          style
+        ]}
         onPress={handlePress}
         activeOpacity={0.95}
       >
@@ -131,10 +136,12 @@ const OptimizedPropertyCard: React.FC<PropertyCardProps> = memo(
                   <Text style={styles.badgeText}>NEW</Text>
                 </View>
               )}
-              {isPriceReduced && (
+              {isPriceReduced && property.previousPrice && (
                 <View style={[styles.badge, styles.priceReducedBadge]}>
                   <Icon name="trending-down" size={12} color="#fff" />
-                  <Text style={styles.badgeText}>REDUCED</Text>
+                  <Text style={styles.badgeText}>
+                    -{formatPrice(property.previousPrice - property.price)}
+                  </Text>
                 </View>
               )}
               {hasOpenHouse && (

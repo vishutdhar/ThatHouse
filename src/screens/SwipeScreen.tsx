@@ -282,6 +282,8 @@ const SwipeScreen = () => {
     (cardIndex: number) => {
       const property = properties[currentIndex];
       if (property) {
+        // Remove from rejected if it exists there
+        dispatch(removeRejectedProperty(property.id));
         dispatch(addSavedProperty(property.id));
         dispatch(savePropertyAsync(property.id));
         dispatch(incrementIndex());
@@ -295,6 +297,8 @@ const SwipeScreen = () => {
     (cardIndex: number) => {
       const property = properties[currentIndex];
       if (property) {
+        // Remove from saved if it exists there
+        dispatch(removeSavedProperty(property.id));
         dispatch(addRejectedProperty(property.id));
         dispatch(rejectPropertyAsync(property.id));
         dispatch(incrementIndex());
@@ -309,7 +313,11 @@ const SwipeScreen = () => {
       // Super like - save with priority flag
       const property = properties[currentIndex];
       if (property) {
+        // Remove from rejected if it exists there
+        dispatch(removeRejectedProperty(property.id));
+        dispatch(addSavedProperty(property.id));
         dispatch(addPriorityProperty(property.id));
+        dispatch(savePropertyAsync(property.id));
         dispatch(incrementIndex());
         showFeedback('superlike');
       }
@@ -357,11 +365,12 @@ const SwipeScreen = () => {
   }, [dispatch, loadProperties]);
 
   const renderCard = useCallback(
-    (property: Property, index: number) => (
+    (property: Property, index: number, isSwipeActive?: boolean) => (
       <OptimizedPropertyCard
         property={property}
         onPress={() => navigateToPropertyDetails(property.id)}
         style={styles.card}
+        isSwipeActive={isSwipeActive}
       />
     ),
     [navigateToPropertyDetails]
@@ -467,7 +476,7 @@ const SwipeScreen = () => {
               onSwipedTop={handleSwipeTop}
               stackSize={3}
               stackScale={5}
-              stackSeparation={15}
+              stackSeparation={20}
             />
           )
         )}

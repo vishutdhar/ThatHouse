@@ -37,8 +37,8 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onPress, style })
   };
   
   const isNewListing = property.daysOnMarket <= 7;
-  const isPriceReduced = Math.random() > 0.7; // Mock price reduction status
-  const hasOpenHouse = Math.random() > 0.8; // Mock open house status
+  const isPriceReduced = property.isPriceReduced || false;
+  const hasOpenHouse = !!property.nextOpenHouse;
 
   const getPropertyTypeLabel = (type: PropertyType) => {
     switch (type) {
@@ -115,10 +115,12 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onPress, style })
                 <Text style={styles.badgeText}>NEW</Text>
               </View>
             )}
-            {isPriceReduced && (
+            {isPriceReduced && property.previousPrice && (
               <View style={[styles.badge, styles.priceReducedBadge]}>
                 <Icon name="trending-down" size={12} color="#fff" />
-                <Text style={styles.badgeText}>REDUCED</Text>
+                <Text style={styles.badgeText}>
+                  -{formatPrice(property.previousPrice - property.price)}
+                </Text>
               </View>
             )}
             {hasOpenHouse && (

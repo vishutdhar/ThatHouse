@@ -27,6 +27,16 @@ export interface Property {
     phone: string;
     email: string;
   };
+  // Price tracking
+  previousPrice?: number;
+  priceChangedDate?: string;
+  isPriceReduced?: boolean;
+  // Open house tracking
+  nextOpenHouse?: {
+    startTime: string;
+    endTime: string;
+    notes?: string;
+  };
 }
 
 // Transform Supabase property to our app format
@@ -50,6 +60,16 @@ const transformProperty = (dbProperty: any, images: any[]): Property => {
     longitude: dbProperty.longitude,
     daysOnMarket: dbProperty.days_on_market,
     virtualTourUrl: dbProperty.virtual_tour_url,
+    // Price tracking fields
+    previousPrice: dbProperty.previous_price,
+    priceChangedDate: dbProperty.price_changed_date,
+    isPriceReduced: dbProperty.is_price_reduced,
+    // Open house info (if using the view)
+    nextOpenHouse: dbProperty.next_open_house_start ? {
+      startTime: dbProperty.next_open_house_start,
+      endTime: dbProperty.next_open_house_end,
+      notes: dbProperty.next_open_house_notes
+    } : undefined,
   };
 };
 
@@ -153,9 +173,9 @@ export const fetchProperties = async (page: number = 1, limit: number = 20) => {
     .select('*', { count: 'exact', head: true })
     .eq('status', 'ACTIVE');
 
-  // Fetch properties with their images
+  // Fetch properties with their images and open house info
   const { data: properties, error } = await supabase
-    .from('properties')
+    .from('properties_with_open_houses')
     .select(`
       *,
       property_images (
@@ -310,7 +330,7 @@ export const unrejectProperty = async (propertyId: string) => {
 
 export const searchProperties = async (query: string) => {
   const { data: properties, error } = await supabase
-    .from('properties')
+    .from('properties_with_open_houses')
     .select(`
       *,
       property_images (

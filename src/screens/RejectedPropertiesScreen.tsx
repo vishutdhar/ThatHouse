@@ -88,7 +88,7 @@ const RejectedPropertiesScreen = () => {
           }
         }}
       >
-        <Icon name="heart-outline" size={24} color="#FF6B6B" />
+        <Icon name="add-circle" size={32} color="#4CAF50" />
       </TouchableOpacity>
     </TouchableOpacity>
   );
@@ -206,7 +206,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     top: 10,
     right: 10,
     padding: 8,
-    backgroundColor: colors.card,
+    backgroundColor: 'transparent',
     borderRadius: 20,
     shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 1 },

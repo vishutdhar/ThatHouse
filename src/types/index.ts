@@ -23,6 +23,16 @@ export interface Property {
   viewCount?: number;
   daysOnMarket: number;
   status: PropertyStatus;
+  // Price tracking
+  previousPrice?: number;
+  priceChangedDate?: string;
+  isPriceReduced?: boolean;
+  // Open house tracking
+  nextOpenHouse?: {
+    startTime: string;
+    endTime: string;
+    notes?: string;
+  };
 }
 
 export enum PropertyType {

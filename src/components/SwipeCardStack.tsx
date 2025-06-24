@@ -29,7 +29,7 @@ const SCALE_FACTOR = 0.9;
 
 interface SwipeCardStackProps {
   cards: any[];
-  renderCard: (card: any, index: number) => React.ReactNode;
+  renderCard: (card: any, index: number, isSwipeActive?: boolean) => React.ReactNode;
   onSwipedLeft?: (index: number) => void;
   onSwipedRight?: (index: number) => void;
   onSwipedTop?: (index: number) => void;
@@ -56,17 +56,19 @@ const SwipeCard = ({
   cardsLength,
   stackScale,
   stackSeparation,
+  isSwipeActive,
 }: {
   card: any;
   index: number;
   isFirst: boolean;
-  renderCard: (card: any, index: number) => React.ReactNode;
+  renderCard: (card: any, index: number, isSwipeActive?: boolean) => React.ReactNode;
   translateX: any;
   translateY: any;
   panGesture: any;
   cardsLength: number;
   stackScale: number;
   stackSeparation: number;
+  isSwipeActive: boolean;
 }) => {
   const cardAnimatedStyle = useAnimatedStyle(() => {
     if (!isFirst) {
@@ -126,11 +128,11 @@ const SwipeCard = ({
       {isFirst ? (
         <GestureDetector gesture={panGesture}>
           <Animated.View style={StyleSheet.absoluteFillObject}>
-            {renderCard(card, index)}
+            {renderCard(card, index, isSwipeActive)}
           </Animated.View>
         </GestureDetector>
       ) : (
-        renderCard(card, index)
+        renderCard(card, index, false)
       )}
     </Animated.View>
   );
@@ -153,18 +155,25 @@ const SwipeCardStack = forwardRef<SwipeCardStackRef, SwipeCardStackProps>(
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(0);
     const currentIndex = useSharedValue(0);
+    const [isSwipeActive, setIsSwipeActive] = useState(false);
 
     const resetPosition = useCallback(() => {
       'worklet';
       translateX.value = withSpring(0, {
-        damping: 15,
-        stiffness: 100,
-        mass: 1,
+        damping: 20,
+        stiffness: 90,
+        mass: 0.8,
+        overshootClamping: false,
+        restDisplacementThreshold: 0.01,
+        restSpeedThreshold: 2,
       });
       translateY.value = withSpring(0, {
-        damping: 15,
-        stiffness: 100,
-        mass: 1,
+        damping: 20,
+        stiffness: 90,
+        mass: 0.8,
+        overshootClamping: false,
+        restDisplacementThreshold: 0.01,
+        restSpeedThreshold: 2,
       });
     }, [translateX, translateY]);
 
@@ -185,9 +194,6 @@ const SwipeCardStack = forwardRef<SwipeCardStackRef, SwipeCardStackProps>(
     );
 
     const panGesture = Gesture.Pan()
-      .onStart(() => {
-        'worklet';
-      })
       .onUpdate((event) => {
         'worklet';
         translateX.value = event.translationX;
@@ -203,28 +209,32 @@ const SwipeCardStack = forwardRef<SwipeCardStackRef, SwipeCardStackProps>(
           translateX.value = withTiming(
             -screenWidth * 1.5,
             {
-              duration: 300,
-              easing: Easing.out(Easing.ease),
+              duration: 250,
+              easing: Easing.bezier(0.25, 0.1, 0.25, 1),
             },
-            () => {
+            (finished) => {
               'worklet';
-              runOnJS(handleSwipe)('left');
-              translateX.value = 0;
-              translateY.value = 0;
+              if (finished) {
+                runOnJS(handleSwipe)('left');
+                translateX.value = 0;
+                translateY.value = 0;
+              }
             }
           );
         } else if (shouldSwipeRight) {
           translateX.value = withTiming(
             screenWidth * 1.5,
             {
-              duration: 300,
-              easing: Easing.out(Easing.ease),
+              duration: 250,
+              easing: Easing.bezier(0.25, 0.1, 0.25, 1),
             },
-            () => {
+            (finished) => {
               'worklet';
-              runOnJS(handleSwipe)('right');
-              translateX.value = 0;
-              translateY.value = 0;
+              if (finished) {
+                runOnJS(handleSwipe)('right');
+                translateX.value = 0;
+                translateY.value = 0;
+              }
             }
           );
         } else if (shouldSwipeTop) {
@@ -234,15 +244,17 @@ const SwipeCardStack = forwardRef<SwipeCardStackRef, SwipeCardStackProps>(
               duration: 300,
               easing: Easing.out(Easing.ease),
             },
-            () => {
+            (finished) => {
               'worklet';
-              runOnJS(handleSwipe)('top');
-              translateX.value = 0;
-              translateY.value = 0;
+              if (finished) {
+                runOnJS(handleSwipe)('top');
+                translateX.value = 0;
+                translateY.value = 0;
+              }
             }
           );
         } else {
-          runOnJS(resetPosition)();
+          resetPosition();
         }
       });
 
@@ -253,11 +265,13 @@ const SwipeCardStack = forwardRef<SwipeCardStackRef, SwipeCardStackProps>(
           duration: 300,
           easing: Easing.out(Easing.ease),
         },
-        () => {
+        (finished) => {
           'worklet';
-          runOnJS(handleSwipe)('left');
-          translateX.value = 0;
-          translateY.value = 0;
+          if (finished) {
+            runOnJS(handleSwipe)('left');
+            translateX.value = 0;
+            translateY.value = 0;
+          }
         }
       );
     }, [translateX, translateY, handleSwipe]);
@@ -269,11 +283,13 @@ const SwipeCardStack = forwardRef<SwipeCardStackRef, SwipeCardStackProps>(
           duration: 300,
           easing: Easing.out(Easing.ease),
         },
-        () => {
+        (finished) => {
           'worklet';
-          runOnJS(handleSwipe)('right');
-          translateX.value = 0;
-          translateY.value = 0;
+          if (finished) {
+            runOnJS(handleSwipe)('right');
+            translateX.value = 0;
+            translateY.value = 0;
+          }
         }
       );
     }, [translateX, translateY, handleSwipe]);
@@ -285,11 +301,13 @@ const SwipeCardStack = forwardRef<SwipeCardStackRef, SwipeCardStackProps>(
           duration: 300,
           easing: Easing.out(Easing.ease),
         },
-        () => {
+        (finished) => {
           'worklet';
-          runOnJS(handleSwipe)('top');
-          translateX.value = 0;
-          translateY.value = 0;
+          if (finished) {
+            runOnJS(handleSwipe)('top');
+            translateX.value = 0;
+            translateY.value = 0;
+          }
         }
       );
     }, [translateX, translateY, handleSwipe]);
@@ -320,6 +338,7 @@ const SwipeCardStack = forwardRef<SwipeCardStackRef, SwipeCardStackProps>(
               cardsLength={cards.length}
               stackScale={stackScale}
               stackSeparation={stackSeparation}
+              isSwipeActive={isSwipeActive}
             />
           ))}
         </View>
@@ -345,6 +364,7 @@ const styles = StyleSheet.create({
     height: screenHeight * 0.65,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden', // Changed back to hidden to clip the cards properly
   },
 });
 
